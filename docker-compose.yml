@@ -1,0 +1,41 @@
+services:
+  shap-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: shap-studio:latest
+    container_name: shap-studio
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "com.docker.compose.project=shap-studio"
+      - "app.description=SHAP Analysis Studio"
+
+    # Uncomment to use with Traefik reverse proxy:
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.shap-studio.rule=Host(`shap.yourdomain.local`)"
+    #   - "traefik.http.services.shap-studio.loadbalancer.server.port=80"
+
+    # Resource limits (adjust to your server)
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 128M
+        reservations:
+          memory: 32M
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
